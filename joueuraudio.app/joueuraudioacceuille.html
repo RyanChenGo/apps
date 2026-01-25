@@ -4,24 +4,30 @@
 
 <pre>
 joueur audio.app
-===============
+================
 
-Mettre un audio pour jouer .
-100% Gratuit , très simple .
-Pas besoin de créer un compte .
-N'importe quel format
+Mettre un audio pour jouer.
+100% Gratuit, très simple.
+Pas besoin de créer un compte.
+N'importe quel format.
 </pre>
 
-<input type="file" id="file" accept="audio/*">
+<label for="file">
+  <button>Sélectionner un fichier audio</button>
+</label>
+
+<input type="file" id="file" accept="audio/*" hidden>
 
 <br><br>
 
 <audio id="player" controls></audio>
 
 <script src="player.js"></script>
+
 <br>
-<p style="text-align: center; color: gray;">
-  ©ChenRyan AudioPlayer Apps 2026 , Tous droits réservés
+<p style="text-align:center; color:gray;">
+©ChenRyan AudioPlayer Apps 2026 · Tous droits réservés
 </p>
+
 </body>
 </html>
