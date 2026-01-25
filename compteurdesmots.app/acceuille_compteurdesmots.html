@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Compteur des mots</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      font-size: 16px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .stats {
+      margin-top: 20px;
+      display: flex;
+      gap: 20px;
+    }
+    .stat {
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <textarea id="text" placeholder="Type or paste your text here..."></textarea>
+
+  <div class="stats">
+    <div class="stat">Words: <span id="words">0</span></div>
+    <div class="stat">Characters: <span id="chars">0</span></div>
+    <div class="stat">Characters (no spaces): <span id="charsNoSpace">0</span></div>
+  </div>
+
+  <script>
+    const textArea = document.getElementById("text");
+    const wordsEl = document.getElementById("words");
+    const charsEl = document.getElementById("chars");
+    const charsNoSpaceEl = document.getElementById("charsNoSpace");
+
+    textArea.addEventListener("input", () => {
+      const text = textArea.value;
+
+      charsEl.textContent = text.length;
+      charsNoSpaceEl.textContent = text.replace(/\s/g, "").length;
+
+      const words = text
+        .trim()
+        .split(/\s+/)
+        .filter(w => w.length > 0);
+
+      wordsEl.textContent = words.length;
+    });
+  </script>
+</body>
+<p style="text-align: center; color: gray;">
+  ©ChenRyan Compteur des mots Apps 2026 , Tous droits réservés
+</p>
+</html>
