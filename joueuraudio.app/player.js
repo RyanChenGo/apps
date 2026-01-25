@@ -1,7 +1,11 @@
-const fileInput = document.getElementById('file');
-const player = document.getElementById('player');
+const fileInput = document.getElementById("file");
+const player = document.getElementById("player");
 
-fileInput.addEventListener('change', () => {
+function openFile() {
+  fileInput.click();
+}
+
+fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
   if (!file) return;
 
