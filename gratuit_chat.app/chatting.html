@@ -1,42 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Avec AI</title>
+  <title>Discussion IA</title>
+
+  <!-- Puter.js (obligatoire) -->
   <script src="https://js.puter.com/v2/"></script>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 40px;
+    }
+
+    h2 {
+      margin-bottom: 12px;
+    }
+
+    #chat {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    #out {
+      margin-top: 20px;
+    }
+
+    #out div {
+      margin: 6px 0;
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: #666;
+      font-size: 0.9em;
+    }
+  </style>
 </head>
 <body>
 
-<h3>Discute maintenant !</h3>
+<h2>Discute maintenant&nbsp;!</h2>
 
-<input id="chat" placeholder="Frapper et appuyez sur enter" style="width:100%;padding:8px;">
+<input
+  id="chat"
+  placeholder="Tape ton message et appuie sur Entrée"
+  autocomplete="off"
+/>
+
 <div id="out"></div>
 
 <script>
 const input = document.getElementById("chat");
 const out = document.getElementById("out");
 
-input.addEventListener("keydown", async (e) => {
-  if (e.key === "Enter") {
-    const msg = input.value;
-    input.value = "";
-    out.innerHTML += `<div><b>You:</b> ${msg}</div>`;
+let connecte = false;
 
-    const res = await puter.ai.chat(msg, {
-      model: "phi-3-mini"   // 小模型
+input.addEventListener("keydown", async (e) => {
+  if (e.key !== "Enter") return;
+
+  const message = input.value.trim();
+  if (!message) return;
+
+  input.value = "";
+
+  out.innerHTML += `<div><b>Toi :</b> ${message}</div>`;
+  out.innerHTML += `<div id="thinking"><i>L’IA réfléchit…</i></div>`;
+
+  try {
+    // 🔑 Connexion Puter (une seule fois)
+    if (!connecte) {
+      await puter.auth.signIn();
+      connecte = true;
+    }
+
+    const reponse = await puter.ai.chat(message, {
+      model: "phi-3-mini"
     });
 
-    out.innerHTML += `<div><b>AI:</b> ${res.message.content}</div>`;
+    document.getElementById("thinking").remove();
+    out.innerHTML += `<div><b>IA :</b> ${reponse.message.content}</div>`;
+
+  } catch (erreur) {
+    document.getElementById("thinking").remove();
+    out.innerHTML += `<div style="color:red"><b>Erreur :</b> ${erreur}</div>`;
+    console.error(erreur);
   }
 });
 </script>
 
-<footer style="margin-top:3rem;color:#666;text-align:center">
-  Propulsé avec Phi-3 mini
+<footer>
+  Propulsé par de petits modèles open-source
 </footer>
 
-<p style="text-align: center; color: gray;">
-  ©ChenRyan Avec AI Apps 2026 , Tous droits réservés
-</p>
 </body>
 </html>
