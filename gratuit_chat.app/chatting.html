@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Avec AI</title>
+  <script src="https://js.puter.com/v2/"></script>
+</head>
+<body>
+
+<h3>Discute maintenant !</h3>
+
+<input id="chat" placeholder="Frapper et appuyez sur enter" style="width:100%;padding:8px;">
+<div id="out"></div>
+
+<script>
+const input = document.getElementById("chat");
+const out = document.getElementById("out");
+
+input.addEventListener("keydown", async (e) => {
+  if (e.key === "Enter") {
+    const msg = input.value;
+    input.value = "";
+    out.innerHTML += `<div><b>You:</b> ${msg}</div>`;
+
+    const res = await puter.ai.chat(msg, {
+      model: "phi-3-mini"   // 小模型
+    });
+
+    out.innerHTML += `<div><b>AI:</b> ${res.message.content}</div>`;
+  }
+});
+</script>
+
+<footer style="margin-top:3rem;color:#666;text-align:center">
+  Propulsé avec Phi-3 mini
+</footer>
+
+<p style="text-align: center; color: gray;">
+  ©ChenRyan Avec AI Apps 2026 , Tous droits réservés
+</p>
+</body>
+</html>
