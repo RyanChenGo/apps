@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Terminal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: #0a0e1a;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+            padding: 16px;
+            margin: 0;
+        }
+
+        .terminal {
+            background: #0c0f1c;
+            width: 100%;
+            max-width: 1100px;
+            height: 85vh;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(70, 130, 200, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .term-bar {
+            background: #10131f;
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #1e243b;
+        }
+
+        .win-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #2c314a;
+        }
+
+        .dot.red { background: #ff5f56; }
+        .dot.yellow { background: #ffbd2e; }
+        .dot.green { background: #27c93f; }
+
+        .term-title {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            color: #b3ceff;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            font-family: monospace;
+        }
+
+        .output-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px 20px;
+            background: #0b0e18;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #cbd5ff;
+        }
+
+        .output-line {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: inherit;
+            border-left: 2px solid transparent;
+            padding-left: 8px;
+        }
+
+        .output-line.error {
+            color: #ff7b72;
+            border-left-color: #ff3b2e;
+        }
+
+        .output-line.success {
+            color: #9bff9e;
+            border-left-color: #2ecc71;
+        }
+
+        .output-line.warning {
+            color: #ffd966;
+            border-left-color: #f1c40f;
+        }
+
+        .output-line.info {
+            color: #6ec8ff;
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px 18px 20px;
+            background: #0b0e18;
+            border-top: 1px solid #1a1f2f;
+        }
+
+        .prompt {
+            color: #2ecc71;
+            font-weight: bold;
+            font-size: 15px;
+            white-space: nowrap;
+        }
+
+        .prompt-user {
+            color: #6ec8ff;
+        }
+
+        .prompt-path {
+            color: #b0b3d6;
+        }
+
+        #command-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #f0f3ff;
+            font-family: inherit;
+            font-size: 14px;
+            flex: 1;
+            caret-color: #5a9eff;
+        }
+
+        .output-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        .output-area::-webkit-scrollbar-track {
+            background: #151c2c;
+        }
+        .output-area::-webkit-scrollbar-thumb {
+            background: #2e3a5e;
+            border-radius: 6px;
+        }
+
+        #command-input:focus {
+            caret-color: #3eff9e;
+        }
+    </style>
+</head>
+<body>
+<div class="terminal">
+    <div class="term-bar">
+        <div class="win-dots">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+        </div>
+        <div class="term-title" id="dynamic-title">Terminal</div>
+        <div style="width: 68px;"></div>
+    </div>
+    <div class="output-area" id="output-area">
+        <div class="output-line info">──────────────────────────────────────────</div>
+        <div class="output-line info">   H4CK3R TERMINAL v2.0  |  Simulation Env</div>
+        <div class="output-line info">   Type 'help' for available commands (50+ basic)</div>
+        <div class="output-line info">   Special commands: /ban , //hack , !efface</div>
+        <div class="output-line info">──────────────────────────────────────────</div>
+        <div class="output-line"></div>
+    </div>
+    <div class="input-line">
+        <div class="prompt">
+            <span class="prompt-user">visitor@hackbox</span>:<span class="prompt-path">~$</span>
+        </div>
+        <input type="text" id="command-input" autofocus autocomplete="off" spellcheck="false">
+    </div>
+</div>
+
+<script>
+    // ---------- 50+ base commands (English output) ----------
+    const baseCommands = [
+        "help", "ls", "cd", "pwd", "cat", "echo", "whoami", "date", "uptime", "uname",
+        "ps", "kill", "df", "du", "top", "clear", "history", "cp", "mv", "rm",
+        "mkdir", "rmdir", "touch", "chmod", "grep", "find", "tar", "zip", "ssh", "scp",
+        "ping", "wget", "curl", "netstat", "ifconfig", "route", "nmap", "telnet", "nc", "reboot",
+        "shutdown", "exit", "export", "alias", "sudo", "man", "tail", "head", "sort", "wc"
+    ];
+
+    // Simulated command output (English)
+    function getCommandOutput(cmd, args) {
+        const lowerCmd = cmd.toLowerCase();
+        const argStr = args.join(' ');
+
+        if (lowerCmd === 'help') {
+            let helpMsg = "Available commands: " + baseCommands.join(', ') + "\n\n";
+            helpMsg += "SPECIAL COMMANDS:\n";
+            helpMsg += "  /ban <name>       → Ban a user (simulated)\n";
+            helpMsg += "  //hack <password> → Attempt to fetch password (random success/fail/empty)\n";
+            helpMsg += "  !efface           → Wipe system (rm -rf /* simulation)\n";
+            helpMsg += "  ssh <user>@<host> → Simulate SSH connection (title changes)\n";
+            helpMsg += "  exit              → Exit current SSH session (if active)\n";
+            helpMsg += "  clear             → Clear terminal screen\n";
+            helpMsg += "  All basic commands are simulated for demonstration.";
+            return { output: helpMsg, type: "info" };
+        }
+
+        // SSH command with title update
+        if (lowerCmd === 'ssh') {
+            let target = args.length > 0 ? args[0] : "unknown";
+            let displayIp = "remote.host";
+            let ipMatch = target.match(/\d+\.\d+\.\d+\.\d+/);
+            if (ipMatch) displayIp = ipMatch[0];
+            if (target.includes('@')) {
+                let parts = target.split('@');
+                if (parts[1]) {
+                    let ipPart = parts[1].match(/\d+\.\d+\.\d+\.\d+/);
+                    displayIp = ipPart ? ipPart[0] : parts[1];
+                }
+            }
+            setTitleConnecting(displayIp);
+            setTimeout(() => {
+                addOutputLine(`[SSH] Connecting to ${target} ...`, "info");
+                setTimeout(() => {
+                    addOutputLine(`[SSH] Connection established (key exchange completed) | Secure channel active`, "success");
+                    addOutputLine(`[SSH] Welcome to remote shell. Type 'exit' to disconnect.`, "info");
+                }, 800);
+            }, 50);
+            return { output: `Initiating SSH session to ${target} ...`, type: "info", preventImmediate: true };
+        }
+
+        // Basic command simulations (English)
+        if (lowerCmd === 'ls') {
+            return { output: "Documents  Downloads  Desktop  Pictures  hack_scripts  secret.txt  note.md", type: "success" };
+        }
+        if (lowerCmd === 'pwd') {
+            return { output: "/home/visitor/hackbox", type: "info" };
+        }
+        if (lowerCmd === 'whoami') {
+            return { output: "visitor", type: "info" };
+        }
+        if (lowerCmd === 'date') {
+            return { output: new Date().toString(), type: "info" };
+        }
+        if (lowerCmd === 'uptime') {
+            return { output: "15:42:33 up 2 days,  4:23,  3 users,  load average: 0.08, 0.03, 0.01", type: "info" };
+        }
+        if (lowerCmd === 'uname') {
+            return { output: "Linux hackbox 5.15.0-86-generic #1 SMP x86_64 GNU/Linux", type: "info" };
+        }
+        if (lowerCmd === 'clear') {
+            document.getElementById("output-area").innerHTML = '';
+            addOutputLine("Terminal cleared.", "info");
+            return { output: "", type: "clear", preventDefault: true };
+        }
+        if (lowerCmd === 'echo') {
+            return { output: argStr.join(' ') || "", type: "info" };
+        }
+        if (lowerCmd === 'cat') {
+            if (argStr.length === 0) return { output: "cat: missing file operand", type: "error" };
+            return { output: `[Content of ${argStr[0]}]\nHack the planet!\nLine two: simulated data.`, type: "success" };
+        }
+        if (lowerCmd === 'history') {
+            return { output: "    1  help\n    2  ls -la\n    3  ssh root@localhost\n    4  //hack admin\n    5  /ban neo", type: "info" };
+        }
+        if (lowerCmd === 'cp' || lowerCmd === 'mv' || lowerCmd === 'rm' || lowerCmd === 'mkdir' || lowerCmd === 'rmdir') {
+            return { output: `Simulated: ${cmd} ${argStr.join(' ')} completed`, type: "success" };
+        }
+        if (lowerCmd === 'sudo') {
+            return { output: `visitor is not in the sudoers file. This incident will be reported.`, type: "error" };
+        }
+        if (lowerCmd === 'exit') {
+            if (window.sshActiveFlag) {
+                addOutputLine(`[SSH] Closing connection to ${window.sshActiveIp || "remote"}...`, "info");
+                clearSSHConnection();
+                addOutputLine("[SSH] Disconnected. Returned to local terminal.", "success");
+                return { output: "", type: "info", preventDefault: true };
+            } else {
+                return { output: "exit: no active session. Close the tab to quit.", type: "warning" };
+            }
+        }
+        if (lowerCmd === 'ping') {
+            let target = args[0] || "google.com";
+            return { output: `PING ${target} (142.250.185.46) 56(84) bytes of data.\n64 bytes from ${target}: icmp_seq=1 ttl=115 time=12.3 ms`, type: "success" };
+        }
+        if (lowerCmd === 'wget') {
+            return { output: `--2025-03-30--  https://${args[0] || "example.com"}\nSaved 'index.html'`, type: "success" };
+        }
+        if (lowerCmd === 'netstat') {
+            return { output: "Active Internet connections (w/o servers)\ntcp        0      0 192.168.1.10:42442     142.250.185.46:443      ESTABLISHED", type: "info" };
+        }
+        if (lowerCmd === 'ifconfig') {
+            return { output: "eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500\n        inet 192.168.1.10  netmask 255.255.255.0  broadcast 192.168.1.255", type: "info" };
+        }
+        if (lowerCmd === 'nmap') {
+            return { output: "Starting Nmap 7.80 ( https://nmap.org )\nNmap scan report for localhost (127.0.0.1)\nHost is up (0.00023s latency).\nNot shown: 997 closed ports\nPORT     STATE SERVICE\n22/tcp   open  ssh\n80/tcp   open  http\n443/tcp  open  https", type: "info" };
+        }
+        if (lowerCmd === 'top') {
+            return { output: "top - 15:42:33 up 2 days,  4:23,  3 users,  load average: 0.08, 0.03, 0.01\nTasks: 120 total,   1 running, 119 sleeping,   0 stopped,   0 zombie", type: "info" };
+        }
+        if (lowerCmd === 'df') {
+            return { output: "Filesystem     1K-blocks    Used Available Use% Mounted on\n/dev/sda1       1025188  401256  573456  42% /", type: "info" };
+        }
+        if (lowerCmd === 'grep') {
+            return { output: `Simulated grep: found match for "${argStr.join(' ')}"`, type: "success" };
+        }
+        if (lowerCmd === 'ps') {
+            return { output: "  PID TTY          TIME CMD\n 1234 pts/0    00:00:00 bash\n 5678 pts/0    00:00:00 ps", type: "info" };
+        }
+        if (lowerCmd === 'kill') {
+            return { output: `Simulated: sent signal to process ${args[0] || '?'}`, type: "success" };
+        }
+        if (lowerCmd === 'du') {
+            return { output: "4.0K    ./Documents\n8.0K    ./Downloads\n12K     .", type: "info" };
+        }
+        if (lowerCmd === 'touch') {
+            return { output: `File '${args[0] || 'newfile'}' created (simulated).`, type: "success" };
+        }
+        if (lowerCmd === 'chmod') {
+            return { output: `Permissions changed (simulated) for ${args[args.length-1] || 'file'}`, type: "success" };
+        }
+        if (lowerCmd === 'find') {
+            return { output: `./secret.txt\n./hack_scripts/exploit.py`, type: "info" };
+        }
+        if (lowerCmd === 'tar') {
+            return { output: `tar: archive ${args[1] || 'archive.tar'} created (simulated)`, type: "success" };
+        }
+        if (lowerCmd === 'zip') {
+            return { output: `zip: adding files to ${args[0] || 'archive.zip'} (simulated)`, type: "success" };
+        }
+        if (lowerCmd === 'scp') {
+            return { output: `Simulated secure copy: ${argStr}`, type: "success" };
+        }
+        if (lowerCmd === 'curl') {
+            return { output: `<!DOCTYPE html><html><head><title>Simulated curl</title></head><body><h1>Mock response</h1></body></html>`, type: "info" };
+        }
+        if (lowerCmd === 'route') {
+            return { output: "Kernel IP routing table\nDestination     Gateway         Genmask         Flags Metric Ref    Use Iface\ndefault         192.168.1.1     0.0.0.0         UG    0      0        0 eth0", type: "info" };
+        }
+        if (lowerCmd === 'telnet') {
+            return { output: `Trying ${args[0] || '127.0.0.1'}...\nConnected. Escape character is '^]'. (simulated)`, type: "info" };
+        }
+        if (lowerCmd === 'nc') {
+            return { output: `Netcat session to ${args[0] || 'target'} (simulated)`, type: "info" };
+        }
+        if (lowerCmd === 'reboot') {
+            return { output: `reboot: System restart simulated (no actual reboot)`, type: "warning" };
+        }
+        if (lowerCmd === 'shutdown') {
+            return { output: `shutdown: System power-off simulated`, type: "warning" };
+        }
+        if (lowerCmd === 'export') {
+            return { output: `export ${argStr} (environment variable set)`, type: "success" };
+        }
+        if (lowerCmd === 'alias') {
+            return { output: `alias ${argStr[0] || 'name'}='${argStr.slice(1).join(' ') || 'echo'}' (simulated)`, type: "success" };
+        }
+        if (lowerCmd === 'man') {
+            return { output: `Manual page for ${args[0] || 'command'} not available (simulated). Try 'help'.`, type: "info" };
+        }
+        if (lowerCmd === 'tail') {
+            return { output: `tail: last 10 lines of ${args[0] || 'file'} (simulated content)`, type: "info" };
+        }
+        if (lowerCmd === 'head') {
+            return { output: `head: first 10 lines of ${args[0] || 'file'} (simulated content)`, type: "info" };
+        }
+        if (lowerCmd === 'sort') {
+            return { output: `Sorted output (simulated):\naaa\nbbb\nccc`, type: "info" };
+        }
+        if (lowerCmd === 'wc') {
+            return { output: ` 5  20 120 ${args[0] || 'file.txt'} (simulated word count)`, type: "info" };
+        }
+        if (baseCommands.includes(lowerCmd)) {
+            return { output: `[${cmd.toUpperCase()}] Command executed (simulated). Args: ${argStr || 'none'}`, type: "success" };
+        }
+        return null;
+    }
+
+    // ---------- Global state ----------
+    let currentJobs = 0;
+    let sshActiveFlag = false;
+    let sshActiveIp = null;
+
+    const outputArea = document.getElementById("output-area");
+    const commandInput = document.getElementById("command-input");
+    const titleElement = document.getElementById("dynamic-title");
+
+    function updateTitle() {
+        if (currentJobs > 0) {
+            titleElement.textContent = "Terminal - Running jobs";
+            document.title = "Terminal - Running jobs";
+        } else if (sshActiveFlag && sshActiveIp) {
+            titleElement.textContent = `Terminal - Connecting (${sshActiveIp})`;
+            document.title = `Terminal - Connecting (${sshActiveIp})`;
+        } else {
+            titleElement.textContent = "Terminal";
+            document.title = "Terminal";
+        }
+    }
+
+    function setTitleConnecting(ip) {
+        sshActiveFlag = true;
+        sshActiveIp = ip;
+        window.sshActiveFlag = sshActiveFlag;
+        window.sshActiveIp = sshActiveIp;
+        updateTitle();
+    }
+
+    function clearSSHConnection() {
+        sshActiveFlag = false;
+        sshActiveIp = null;
+        window.sshActiveFlag = false;
+        window.sshActiveIp = null;
+        updateTitle();
+    }
+
+    function addJob() {
+        currentJobs++;
+        updateTitle();
+        setTimeout(() => {
+            if (currentJobs > 0) {
+                currentJobs--;
+                updateTitle();
+                addOutputLine("[System] Background task finished, remaining jobs: " + currentJobs, "info");
+            }
+        }, 4500);
+    }
+
+    function addOutputLine(text, type = "default") {
+        const lineDiv = document.createElement("div");
+        lineDiv.className = "output-line";
+        if (type === "error") lineDiv.classList.add("error");
+        else if (type === "success") lineDiv.classList.add("success");
+        else if (type === "warning") lineDiv.classList.add("warning");
+        else if (type === "info") lineDiv.classList.add("info");
+        lineDiv.textContent = text;
+        outputArea.appendChild(lineDiv);
+        lineDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    // Main command handler (English)
+    function handleCommand(rawInput) {
+        if (!rawInput.trim()) {
+            addOutputLine(""); 
+            return;
+        }
+        const trimmed = rawInput.trim();
+        
+        // SPECIAL: /ban <name>
+        if (trimmed.startsWith("/ban")) {
+            const parts = trimmed.split(/\s+/);
+            const name = parts[1] ? parts[1] : "unknown";
+            addOutputLine(`ban : banned ${name}`, "warning");
+            addJob();
+            return;
+        }
+        
+        // SPECIAL: //hack <password>
+        if (trimmed.startsWith("//hack")) {
+            const parts = trimmed.split(/\s+/);
+            const passArg = parts[1] ? parts[1] : "";
+            if (!passArg) {
+                addOutputLine("Usage: //hack <password>", "error");
+                return;
+            }
+            const rand = Math.floor(Math.random() * 3);
+            if (rand === 0) {
+                const randomPass = Math.random().toString(36).substring(2, 12) + Math.random().toString(36).substring(2, 4);
+                addOutputLine(`hack : password is ${randomPass}`, "success");
+                addJob();
+            } else if (rand === 1) {
+                addOutputLine(`hack : cannot fetch ./password Error : You have no acces`, "error");
+                addJob();
+            } else {
+                addOutputLine(`hack : fetch ./password but file is empty`, "warning");
+                addJob();
+            }
+            return;
+        }
+        
+        // SPECIAL: !efface (wipe system)
+        if (trimmed === "!efface") {
+            addOutputLine("⚠️  !efface  : Initiating wipe sequence...  rm -rf /*  ⚠️", "error");
+            addOutputLine("!!! System files being deleted: /etc, /usr, /var, /home ...  !!!", "error");
+            addOutputLine("*** SIMULATION: Terminal will self-destruct in 3 seconds (visual only) ***", "warning");
+            setTimeout(() => {
+                outputArea.innerHTML = '';
+                addOutputLine("┌──────────────────────────────────────┐", "error");
+                addOutputLine("│      SYSTEM WIPED OUT (SIMULATION)   │", "error");
+                addOutputLine("│   rm -rf /* completed → All data lost │", "error");
+                addOutputLine("│   Reload the page to restore terminal │", "error");
+                addOutputLine("└──────────────────────────────────────┘", "error");
+                addOutputLine("", "default");
+                commandInput.disabled = true;
+                commandInput.placeholder = "System wiped... Press F5 to reset";
+                commandInput.style.opacity = "0.6";
+            }, 500);
+            return;
+        }
+        
+        // Handle exit with SSH context (override exit behavior)
+        const parts = trimmed.split(/\s+/);
+        const mainCmd = parts[0];
+        const args = parts.slice(1);
+        
+        if (mainCmd.toLowerCase() === "exit") {
+            if (sshActiveFlag) {
+                addOutputLine(`[SSH] Closing connection to ${sshActiveIp || "remote"}...`, "info");
+                clearSSHConnection();
+                addOutputLine("[SSH] Disconnected. Returned to local terminal.", "success");
+            } else {
+                addOutputLine("exit: no active session. Close the tab to quit.", "warning");
+            }
+            return;
+        }
+        
+        // SSH command handling (with title change)
+        if (mainCmd.toLowerCase() === "ssh") {
+            if (sshActiveFlag) {
+                addOutputLine(`[Auto] Closing existing SSH connection (${sshActiveIp})...`, "warning");
+                clearSSHConnection();
+            }
+            let target = args.length > 0 ? args[0] : "localhost";
+            let displayIp = "remote.host";
+            let ipMatch = target.match(/\d+\.\d+\.\d+\.\d+/);
+            if (ipMatch) displayIp = ipMatch[0];
+            if (target.includes('@')) {
+                let partsHost = target.split('@');
+                if (partsHost[1]) {
+                    let ipPart = partsHost[1].match(/\d+\.\d+\.\d+\.\d+/);
+                    displayIp = ipPart ? ipPart[0] : partsHost[1];
+                }
+            }
+            setTitleConnecting(displayIp);
+            addOutputLine(`[SSH] Requesting connection to ${target} ...`, "info");
+            setTimeout(() => {
+                addOutputLine(`[SSH] Host key verification successful. Secure connection established. (simulated)`, "success");
+                addOutputLine(`[SSH] Type 'exit' to disconnect.`, "info");
+            }, 400);
+            addJob();
+            return;
+        }
+        
+        // Basic command execution
+        const result = getCommandOutput(mainCmd, args);
+        if (result === null) {
+            addOutputLine(`${mainCmd}: command not found (type 'help' for available commands)`, "error");
+            return;
+        }
+        
+        if (result.type === "clear" && result.preventDefault) return;
+        if (result.output) {
+            addOutputLine(result.output, result.type || "default");
+        }
+        if (!result.preventImmediate && mainCmd.toLowerCase() !== "clear") {
+            if (["wget", "ping", "nmap", "tar", "zip", "scp", "curl"].includes(mainCmd.toLowerCase())) {
+                addJob();
+            }
+        }
+    }
+    
+    function submitCommand() {
+        let raw = commandInput.value;
+        handleCommand(raw);
+        commandInput.value = "";
+        outputArea.scrollTop = outputArea.scrollHeight;
+        commandInput.focus();
+    }
+    
+    commandInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            submitCommand();
+        }
+    });
+    
+    const terminalDiv = document.querySelector(".terminal");
+    terminalDiv.addEventListener("click", (e) => {
+        if (e.target !== commandInput) commandInput.focus();
+    });
+    
+    // initial update
+    updateTitle();
+    window.sshActiveFlag = false;
+    window.sshActiveIp = null;
+    
+    commandInput.focus();
+    addOutputLine("Type 'help' to begin.", "info");
+</script>
+</body>
+</html>
