@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全格式文档编辑器 - 支持9种格式导出</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Courier New', monospace;
+            background: #1e1e2f;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 工具栏 */
+        .toolbar {
+            background: #2d2d3a;
+            padding: 12px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-bottom: 1px solid #3d3d4a;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .tool-group {
+            display: flex;
+            gap: 4px;
+            background: #3d3d4a;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .tool-btn {
+            background: #4a4a5a;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-family: monospace;
+        }
+
+        .tool-btn:hover {
+            background: #5a5a6a;
+            transform: translateY(-1px);
+        }
+
+        .tool-btn.primary {
+            background: #4caf50;
+        }
+
+        .tool-btn.primary:hover {
+            background: #45a049;
+        }
+
+        .tool-btn.warning {
+            background: #ff9800;
+        }
+
+        .tool-btn.warning:hover {
+            background: #e68900;
+        }
+
+        .tool-btn.danger {
+            background: #f44336;
+        }
+
+        .tool-btn.danger:hover {
+            background: #da190b;
+        }
+
+        .file-format {
+            background: #2d2d3a;
+            color: #ffd966;
+            font-weight: bold;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            background: #2d2d3a;
+            padding: 6px 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #aaa;
+            border-top: 1px solid #3d3d4a;
+            font-family: monospace;
+        }
+
+        /* 编辑器区域 */
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        /* 文件名栏 */
+        .filename-bar {
+            background: #2d2d3a;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filename-bar label {
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        #filename {
+            background: #1e1e2f;
+            border: 1px solid #4a4a5a;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            width: 250px;
+        }
+
+        #fileExt {
+            background: #3d3d4a;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #ffd966;
+            font-weight: bold;
+        }
+
+        .stats {
+            margin-left: auto;
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* 代码编辑器 */
+        .code-editor {
+            flex: 1;
+            background: #1e1e2f;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #3d3d4a;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            background: #1e1e2f;
+            color: #e0e0e0;
+            border: none;
+            outline: none;
+            padding: 20px;
+            font-family: 'Courier New', 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            tab-size: 4;
+        }
+
+        /* 预览区域 (可选) */
+        .preview-panel {
+            position: fixed;
+            right: 20px;
+            top: 80px;
+            width: 400px;
+            height: 300px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            background: #2d2d3a;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-size: 12px;
+        }
+
+        .preview-content {
+            flex: 1;
+            padding: 12px;
+            overflow: auto;
+        }
+
+        /* 通知 */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease;
+            z-index: 2000;
+            font-family: monospace;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2d2d3a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #5a5a6a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6a6a7a;
+        }
+
+        @media (max-width: 768px) {
+            .toolbar {
+                padding: 8px;
+            }
+            .tool-btn {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+            .filename-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .stats {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <div class="tool-group">
+            <button class="tool-btn primary" onclick="saveAsMD()">📝 导出 .md</button>
+            <button class="tool-btn primary" onclick="saveAsTXT()">📄 导出 .txt</button>
+            <button class="tool-btn primary" onclick="saveAsRaw()">⚡ 导出 Raw</button>
+        </div>
+        <div class="tool-group">
+            <button class="tool-btn" onclick="saveAsHTML()">🌐 导出 .html</button>
+            <button class="tool-btn" onclick="saveAsJS()">📜 导出 .js</button>
+            <button class="tool-btn" onclick="saveAsJSON()">🔧 导出 .json</button>
+            <button class="tool-btn" onclick="saveAsCSS()">🎨 导出 .css</button>
+        </div>
+        <div class="tool-group">
+            <button class="tool-btn warning" onclick="saveAsXML()">📋 导出 .xml</button>
+            <button class="tool-btn warning" onclick="saveAsCSV()">📊 导出 .csv</button>
+            <button class="tool-btn warning" onclick="saveAsPDF()">📑 导出 .pdf</button>
+        </div>
+        <div class="tool-group">
+            <button class="tool-btn" onclick="loadFile()">📂 打开文件</button>
+            <button class="tool-btn danger" onclick="clearEditor()">🗑️ 清空</button>
+            <button class="tool-btn" onclick="copyToClipboard()">📋 复制</button>
+        </div>
+    </div>
+
+    <div class="editor-container">
+        <div class="filename-bar">
+            <label>📁 文件名：</label>
+            <input type="text" id="filename" value="document" placeholder="输入文件名">
+            <span id="fileExt">.txt</span>
+            <div class="stats">
+                <span>📊 字符数: <span id="charCount">0</span></span>
+                <span>📝 单词数: <span id="wordCount">0</span></span>
+                <span>📏 行数: <span id="lineCount">0</span></span>
+                <span>💾 大小: <span id="sizeBytes">0</span> B</span>
+            </div>
+        </div>
+        <div class="code-editor">
+            <textarea id="editor" placeholder="开始输入你的内容...&#10;&#10;支持导出多种格式：.md .txt .html .js .json .css .pdf .xml .csv"></textarea>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span>✨ 全格式文档编辑器 | 支持 9 种格式导出</span>
+        <span>💡 提示：可以打开已有文件编辑后重新导出</span>
+    </div>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const filenameInput = document.getElementById('filename');
+        const fileExtSpan = document.getElementById('fileExt');
+        const charCountSpan = document.getElementById('charCount');
+        const wordCountSpan = document.getElementById('wordCount');
+        const lineCountSpan = document.getElementById('lineCount');
+        const sizeBytesSpan = document.getElementById('sizeBytes');
+
+        // 更新统计信息
+        function updateStats() {
+            const content = editor.value;
+            const charCount = content.length;
+            const wordCount = content.trim() === '' ? 0 : content.trim().split(/\s+/).length;
+            const lineCount = content === '' ? 0 : content.split('\n').length;
+            const sizeBytes = new Blob([content]).size;
+            
+            charCountSpan.textContent = charCount;
+            wordCountSpan.textContent = wordCount;
+            lineCountSpan.textContent = lineCount;
+            sizeBytesSpan.textContent = sizeBytes;
+        }
+
+        editor.addEventListener('input', updateStats);
+        editor.addEventListener('keyup', updateStats);
+        
+        // 更新扩展名显示
+        function updateExtension(ext) {
+            fileExtSpan.textContent = ext;
+        }
+
+        // 显示通知
+        function showNotification(message, isError = false) {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.style.background = isError ? '#f44336' : '#4caf50';
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 2500);
+        }
+
+        // 通用保存函数
+        function saveFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification(`✅ 已导出: ${filename}`);
+        }
+
+        // 获取当前文件名和扩展名
+        function getFullFilename(ext) {
+            let name = filenameInput.value.trim();
+            if (name === '') name = 'document';
+            return `${name}${ext}`;
+        }
+
+        // ==================== 导出功能 ====================
+        
+        // 1. 导出 .md
+        function saveAsMD() {
+            const content = editor.value;
+            const filename = getFullFilename('.md');
+            saveFile(content, filename, 'text/markdown');
+            updateExtension('.md');
+        }
+
+        // 2. 导出 .txt
+        function saveAsTXT() {
+            const content = editor.value;
+            const filename = getFullFilename('.txt');
+            saveFile(content, filename, 'text/plain');
+            updateExtension('.txt');
+        }
+
+        // 3. 导出 Raw (纯文本)
+        function saveAsRaw() {
+            const content = editor.value;
+            const filename = getFullFilename('.raw');
+            saveFile(content, filename, 'text/plain');
+            updateExtension('.raw');
+        }
+
+        // 4. 导出 .html
+        function saveAsHTML() {
+            let content = editor.value;
+            // 如果内容不是完整HTML，包装一下
+            if (!content.trim().startsWith('<!DOCTYPE') && !content.trim().startsWith('<html')) {
+                content = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: system-ui;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+${content}
+</body>
+</html>`;
+            }
+            const filename = getFullFilename('.html');
+            saveFile(content, filename, 'text/html');
+            updateExtension('.html');
+        }
+
+        // 5. 导出 .js
+        function saveAsJS() {
+            let content = editor.value;
+            // 添加基础包装
+            if (!content.includes('//') && !content.includes('function') && !content.includes('const')) {
+                content = `// 生成的 JavaScript 文件
+// 创建时间: ${new Date().toLocaleString()}
+
+${content}
+
+// 导出模块 (如果需要)
+// export default { yourModule };`;
+            }
+            const filename = getFullFilename('.js');
+            saveFile(content, filename, 'application/javascript');
+            updateExtension('.js');
+        }
+
+        // 6. 导出 .json
+        function saveAsJSON() {
+            let content = editor.value.trim();
+            // 验证是否为有效 JSON，如果不是则尝试包装
+            try {
+                JSON.parse(content);
+            } catch(e) {
+                // 如果不是有效JSON，包装成对象
+                content = JSON.stringify({
+                    data: content,
+                    exportedAt: new Date().toISOString(),
+                    note: "原始内容不是有效JSON，已包装"
+                }, null, 2);
+            }
+            const filename = getFullFilename('.json');
+            saveFile(content, filename, 'application/json');
+            updateExtension('.json');
+        }
+
+        // 7. 导出 .css
+        function saveAsCSS() {
+            let content = editor.value;
+            if (!content.includes('{') && !content.includes('/*')) {
+                content = `/* 样式表 */
+/* 导出时间: ${new Date().toLocaleString()} */
+
+${content}
+
+/* 添加基础样式 */
+body {
+    font-family: system-ui;
+    line-height: 1.6;
+    color: #333;
+}`;
+            }
+            const filename = getFullFilename('.css');
+            saveFile(content, filename, 'text/css');
+            updateExtension('.css');
+        }
+
+        // 8. 导出 .pdf (使用浏览器打印功能)
+        function saveAsPDF() {
+            const content = editor.value;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${filenameInput.value || 'document'}</title>
+                    <style>
+                        body {
+                            font-family: 'Courier New', monospace;
+                            padding: 40px;
+                            line-height: 1.6;
+                            font-size: 12px;
+                        }
+                        pre {
+                            white-space: pre-wrap;
+                            word-wrap: break-word;
+                            font-family: monospace;
+                        }
+                        @media print {
+                            body { margin: 0; padding: 20px; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <pre>${escapeHtml(content)}</pre>
+                    <p style="text-align: center; color: #999; margin-top: 40px;">
+                        导出时间: ${new Date().toLocaleString()}
+                    </p>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+            showNotification('📑 PDF 导出窗口已打开，请使用浏览器的"保存为PDF"功能');
+            updateExtension('.pdf');
+        }
+
+        // 9. 导出 .xml
+        function saveAsXML() {
+            let content = editor.value;
+            if (!content.includes('<?xml') && !content.includes('<root>')) {
+                content = `<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <metadata>
+        <exported>${new Date().toISOString()}</exported>
+        <filename>${filenameInput.value}</filename>
+    </metadata>
+    <content>
+        <![CDATA[
+${content}
+        ]]>
+    </content>
+</document>`;
+            }
+            const filename = getFullFilename('.xml');
+            saveFile(content, filename, 'application/xml');
+            updateExtension('.xml');
+        }
+
+        // 10. 导出 .csv
+        function saveAsCSV() {
+            let content = editor.value;
+            // 如果内容看起来不像CSV，转换为简单的CSV格式
+            if (!content.includes(',') && !content.includes('\t')) {
+                const lines = content.split('\n');
+                content = lines.map(line => `"${line.replace(/"/g, '""')}"`).join('\n');
+                content = '内容\n' + content;
+            }
+            const filename = getFullFilename('.csv');
+            saveFile(content, filename, 'text/csv');
+            updateExtension('.csv');
+        }
+
+        // 辅助函数：HTML转义
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // 打开本地文件
+        function loadFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.txt,.md,.html,.js,.json,.css,.xml,.csv,.raw';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    editor.value = event.target.result;
+                    updateStats();
+                    
+                    // 自动更新文件名
+                    const name = file.name.replace(/\.[^/.]+$/, '');
+                    filenameInput.value = name;
+                    const ext = file.name.split('.').pop();
+                    updateExtension(`.${ext}`);
+                    
+                    showNotification(`📂 已打开: ${file.name}`);
+                };
+                reader.readAsText(file, 'UTF-8');
+            };
+            input.click();
+        }
+
+        // 清空编辑器
+        function clearEditor() {
+            if (confirm('确定要清空所有内容吗？')) {
+                editor.value = '';
+                updateStats();
+                showNotification('🗑️ 已清空编辑器');
+            }
+        }
+
+        // 复制到剪贴板
+        function copyToClipboard() {
+            editor.select();
+            document.execCommand('copy');
+            showNotification('📋 已复制到剪贴板');
+        }
+
+        // 快捷键支持
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                // 默认保存为当前显示格式
+                const currentExt = fileExtSpan.textContent;
+                if (currentExt === '.md') saveAsMD();
+                else if (currentExt === '.txt') saveAsTXT();
+                else if (currentExt === '.html') saveAsHTML();
+                else if (currentExt === '.js') saveAsJS();
+                else if (currentExt === '.json') saveAsJSON();
+                else if (currentExt === '.css') saveAsCSS();
+                else if (currentExt === '.xml') saveAsXML();
+                else if (currentExt === '.csv') saveAsCSV();
+                else saveAsTXT();
+            }
+            
+            if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+                e.preventDefault();
+                loadFile();
+            }
+        });
+
+        // 初始化统计
+        updateStats();
+        
+        // 示例内容
+        const defaultContent = `# 全格式文档编辑器
+
+## 功能特性
+
+- ✅ 支持 **9种格式** 导出：.md / .txt / .raw / .html / .js / .json / .css / .pdf / .xml / .csv
+- ✅ 实时统计：字符数、单词数、行数、文件大小
+- ✅ 打开本地文件进行编辑
+- ✅ 快捷键支持：Ctrl+S 保存，Ctrl+O 打开文件
+
+## 使用说明
+
+1. 在编辑区输入或粘贴内容
+2. 修改文件名（可选）
+3. 点击任意导出按钮
+4. 文件将自动下载到本地
+
+## 示例代码
+
+\`\`\`javascript
+function hello() {
+    console.log("Hello, World!");
+}
+\`\`\`
+
+## CSV 格式示例
+
+姓名,年龄,城市
+张三,25,北京
+李四,30,上海
+
+---
+
+**导出试试看！** 🚀
+`;
+        
+        editor.value = defaultContent;
+        updateStats();
+    </script>
+</body>
+</html>
