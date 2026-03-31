@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Clippy 1000x 烦人版 - 只有“I wanna kill you”能终结它 📎💀</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Courier New', monospace;
+            background: #0a0f1e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 主界面 */
+        .desktop {
+            background: #008080;
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            border: 4px solid #c0c0c0;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            z-index: 1;
+        }
+
+        .title-bar {
+            background: linear-gradient(to right, #0a246a, #3a6ea5);
+            padding: 6px 12px;
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .notepad {
+            background: #ffffe0;
+            margin: 20px;
+            padding: 20px;
+            height: calc(100% - 100px);
+            overflow: auto;
+            font-family: monospace;
+            font-size: 14px;
+            border: 2px solid #c0c0c0;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            background: #ffffe0;
+            border: none;
+            outline: none;
+            font-family: monospace;
+            font-size: 14px;
+            resize: none;
+        }
+
+        /* Clippy 容器 */
+        .clippy-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .clippy-avatar {
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, #ffd966, #ffb347);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.1s;
+            position: relative;
+            animation: bounce 0.3s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(5deg); }
+        }
+
+        /* 气泡 */
+        .speech-bubble {
+            position: absolute;
+            bottom: 110px;
+            right: 0;
+            background: white;
+            border: 4px solid #ff0000;
+            border-radius: 16px;
+            padding: 12px;
+            min-width: 280px;
+            max-width: 320px;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+            animation: vibrate 0.1s infinite;
+        }
+
+        @keyframes vibrate {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-1px); }
+            75% { transform: translateX(1px); }
+        }
+
+        .speech-bubble p {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .speech-bubble button {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin: 2px;
+            cursor: pointer;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        /* 克隆体 */
+        .clippy-clone {
+            position: fixed;
+            font-size: 40px;
+            pointer-events: none;
+            animation: floatAround 2s infinite;
+            z-index: 9998;
+            opacity: 0.8;
+        }
+
+        @keyframes floatAround {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(20px, -20px) rotate(180deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
+
+        /* 通知 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff0;
+            color: #000;
+            padding: 12px;
+            border: 3px solid red;
+            font-weight: bold;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            font-family: monospace;
+            box-shadow: 3px 3px 0px black;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        /* 全屏闪烁效果 */
+        .flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,0,0,0.3);
+            pointer-events: none;
+            z-index: 99999;
+            animation: flash 0.2s ease-out;
+        }
+
+        @keyframes flash {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Clippy 消失动画 */
+        .clippy-dying {
+            animation: die 1s ease-out forwards !important;
+        }
+
+        @keyframes die {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(0.5) rotate(180deg); opacity: 0.5; }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; display: none; }
+        }
+
+        /* 屏幕震动 */
+        @keyframes screenShake {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-5px, 5px); }
+            50% { transform: translate(5px, -5px); }
+            75% { transform: translate(-3px, 3px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        .shake-screen {
+            animation: screenShake 0.3s ease-in-out;
+        }
+
+        /* 导出按钮 */
+        .export-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .export-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: monospace;
+            border-radius: 4px;
+        }
+
+        .export-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop">
+        <div class="title-bar">
+            <span>📎 Clippy 1000x 烦人版 - 只有 "I wanna kill you" 能终结它</span>
+            <span>❌ 🗕 🗖</span>
+        </div>
+        <div class="notepad">
+            <textarea id="textArea" placeholder="开始打字吧... Clippy会疯狂骚扰你... 直到你说 'I wanna kill you'..."></textarea>
+        </div>
+    </div>
+
+    <div class="export-buttons">
+        <button class="export-btn" onclick="exportMD()">📄 导出 .md</button>
+        <button class="export-btn" onclick="exportTXT()">📝 导出 .txt</button>
+    </div>
+
+    <div class="clippy-container" id="mainClippy">
+        <div class="clippy-avatar" id="clippyAvatar">
+            📎
+        </div>
+        <div class="speech-bubble" id="speechBubble">
+            <p id="clippyText">📎 嘿！我是超级烦人版 Clippy！比原版烦1000倍！你说 "I wanna kill you" 我才会消失！</p>
+            <button onclick="showAdvice()">💡 给我建议</button>
+            <button onclick="spawnClone()">📎 复制自己</button>
+            <button onclick="closeBubble()">🔇 闭嘴（3秒后回来）</button>
+        </div>
+    </div>
+
+    <script>
+        let cloneCount = 0;
+        let adviceCount = 0;
+        let closeCount = 0;
+        let killMode = false;
+        let cloneInterval;
+        let notificationInterval;
+        let shakeInterval;
+        let flashInterval;
+        
+        // 烦人语录库 (100+ 条)
+        const annoyingMessages = [
+            "📎 你看起来在打字！需要我帮你加个表情吗？😊😊😊",
+            "📎 检测到你打了空格！要不要转成表格？表格超好用！",
+            "📎 你打字速度太慢了！需要我帮你自动完成吗？",
+            "📎 我注意到你打了字母！要不要改成大写？更醒目！",
+            "📎 你的文档太短了！需要我帮你扩充到10000字吗？",
+            "📎 你打了某个词！需要礼貌用语替换吗？",
+            "📎 看起来你在写代码！但我看不懂，能解释一下吗？",
+            "📎 你打了10分钟了！需要休息提醒吗？☕ 每30秒提醒一次？",
+            "📎 检测到你复制粘贴！需要我检查版权吗？",
+            "📎 你的标点符号用得不对！要我帮你改吗？改成全角？",
+            "📎 我觉得你应该加个图片！要不要我帮你找？我有1000张剪贴画！",
+            "📎 你打了'Hello'！需要翻译成100种语言吗？",
+            "📎 我注意到你删了一行字！需要我帮你恢复吗？每10秒提醒你一次？",
+            "📎 你还没保存！要不要我每分钟提醒你一次？",
+            "📎 你的文档没有标题！要我帮你加个'无标题.txt'吗？",
+            "📎 要不要加个闪烁文字？<blink>超酷的！",
+            "📎 建议把背景改成彩虹色！",
+            "📎 加个MIDI音乐吧！我有最洗脑的！",
+            "📎 要不要加个访客计数器？虽然没人看！",
+            "📎 把这段文字居中加粗变红色闪烁！",
+            "📎 加个跑马灯效果！<marquee>滚来滚去！",
+            "📎 你打了'Dear'！写信模板！我有100种！",
+            "📎 你打了'Love'！需要婚礼策划模板吗？",
+            "📎 你打了'Money'！需要贷款广告吗？",
+            "📎 你打了'Death'！需要遗嘱模板吗？",
+            "📎 你打了'Kill'！需要...等等，你说什么？",
+            "📎 我注意到你盯着屏幕看了3秒！需要眼保健操吗？",
+            "📎 你的鼠标移动太快了！需要我帮你减速吗？",
+            "📎 你的窗口不是最大化的！需要我帮你最大化吗？每10秒问一次？",
+            "📎 今天是周几？需要日历吗？",
+            "📎 你还没吃午饭！需要外卖推荐吗？",
+            "📎 你坐太久了！需要拉伸运动吗？我教你！",
+            "📎 你的电脑风扇在转！需要我帮你关掉它吗？",
+            "📎 你打了100个字了！恭喜！需要庆祝动画吗？"
+        ];
+        
+        const adviceMessages = [
+            "💡 建议：把这段文字改成项目符号列表！",
+            "💡 建议：用 Comic Sans 字体更可爱！",
+            "💡 建议：加个闪烁的文字效果！<blink>",
+            "💡 建议：插入一个剪贴画！我有蝴蝶结🎀",
+            "💡 建议：把背景改成粉红色！",
+            "💡 建议：加个MIDI背景音乐！《最炫民族风》",
+            "💡 建议：用<blink>标签让文字闪烁！",
+            "💡 建议：加个访客计数器！",
+            "💡 建议：把这段文字居中加粗变红色！",
+            "💡 建议：加个跑马灯效果！<marquee>",
+            "💡 建议：加个彩虹渐变背景！",
+            "💡 建议：插入一个GIF动画！我有会跳舞的回形针！",
+            "💡 建议：加个弹窗提醒！每10秒弹一次！",
+            "💡 建议：把你的文档用摩斯密码显示！"
+        ];
+
+        const textArea = document.getElementById('textArea');
+        const clippyText = document.getElementById('clippyText');
+        const speechBubble = document.getElementById('speechBubble');
+        const mainClippy = document.getElementById('mainClippy');
+        const clippyAvatar = document.getElementById('clippyAvatar');
+
+        // 显示通知
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.innerHTML = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        // 屏幕震动
+        function shakeScreen() {
+            document.body.classList.add('shake-screen');
+            setTimeout(() => document.body.classList.remove('shake-screen'), 300);
+        }
+
+        // 全屏闪烁
+        function flashScreen() {
+            const flash = document.createElement('div');
+            flash.className = 'flash-overlay';
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 200);
+        }
+
+        // 关闭气泡（但很快回来）
+        function closeBubble() {
+            speechBubble.style.display = 'none';
+            closeCount++;
+            if (closeCount >= 3) {
+                showNotification("📎 你关不掉我的！我说了比原版烦1000倍！");
+                setTimeout(() => {
+                    speechBubble.style.display = 'block';
+                    clippyText.innerHTML = "📎 哈哈！我回来了！你永远关不掉我！除非你说 'I wanna kill you'！";
+                    flashScreen();
+                }, 1000);
+            } else {
+                setTimeout(() => {
+                    speechBubble.style.display = 'block';
+                    const randomMsg = annoyingMessages[Math.floor(Math.random() * annoyingMessages.length)];
+                    clippyText.innerHTML = randomMsg;
+                    shakeScreen();
+                }, 2000);
+            }
+        }
+
+        // 显示建议
+        function showAdvice() {
+            adviceCount++;
+            const randomAdvice = adviceMessages[Math.floor(Math.random() * adviceMessages.length)];
+            clippyText.innerHTML = randomAdvice + " 采纳吗？不采纳我会一直问！";
+            showNotification("📎 " + randomAdvice);
+            if (adviceCount >= 5) {
+                setTimeout(() => {
+                    clippyText.innerHTML = "📎 你怎么还不采纳我的建议？我很难过！我要复制自己了！";
+                    spawnClone();
+                }, 2000);
+            }
+        }
+
+        // 生成克隆体
+        function spawnClone() {
+            cloneCount++;
+            const clone = document.createElement('div');
+            clone.className = 'clippy-clone';
+            clone.innerHTML = '📎';
+            clone.style.left = Math.random() * window.innerWidth + 'px';
+            clone.style.top = Math.random() * window.innerHeight + 'px';
+            clone.style.fontSize = (30 + Math.random() * 50) + 'px';
+            document.body.appendChild(clone);
+            
+            showNotification(`📎 Clippy 克隆体 #${cloneCount} 已生成！现在有 ${cloneCount} 个我！`);
+            flashScreen();
+            
+            setTimeout(() => {
+                clone.style.transition = 'all 0.5s';
+                clone.style.opacity = '0';
+                setTimeout(() => clone.remove(), 500);
+            }, 4000);
+            
+            if (cloneCount >= 10) {
+                clippyText.innerHTML = "📎 哈哈！现在到处都是我！你被包围了！说 'I wanna kill you' 才能解脱！";
+                for(let i = 0; i < 5; i++) setTimeout(() => spawnClone(), i * 500);
+            }
+        }
+
+        // 自动生成克隆体（烦人）
+        function autoSpawnClones() {
+            if (killMode) return;
+            if (Math.random() < 0.3 && cloneCount < 15) {
+                spawnClone();
+            }
+        }
+
+        // 检测 "I wanna kill you"
+        function checkKillCommand() {
+            const text = textArea.value.toLowerCase();
+            if (text.includes('i wanna kill you') && !killMode) {
+                killMode = true;
+                // 停止所有骚扰
+                if (cloneInterval) clearInterval(cloneInterval);
+                if (notificationInterval) clearInterval(notificationInterval);
+                if (shakeInterval) clearInterval(shakeInterval);
+                if (flashInterval) clearInterval(flashInterval);
+                
+                // Clippy 道歉并消失
+                clippyText.innerHTML = "📎 I'm so sorry... 我太烦人了... 我这就走... 对不起... 😢💔";
+                showNotification("📎 I'm so sorry... 再见...");
+                
+                // 播放消失动画
+                mainClippy.classList.add('clippy-dying');
+                
+                // 移除所有克隆体
+                document.querySelectorAll('.clippy-clone').forEach(c => c.remove());
+                
+                // 最后消失
+                setTimeout(() => {
+                    mainClippy.style.display = 'none';
+                    showNotification("📎 Clippy 已消失... 你自由了... 对不起...");
+                    // 显示最终消息
+                    const finalMsg = document.createElement('div');
+                    finalMsg.style.position = 'fixed';
+                    finalMsg.style.top = '50%';
+                    finalMsg.style.left = '50%';
+                    finalMsg.style.transform = 'translate(-50%, -50%)';
+                    finalMsg.style.background = 'white';
+                    finalMsg.style.border = '5px solid #ffb347';
+                    finalMsg.style.padding = '30px';
+                    finalMsg.style.borderRadius = '20px';
+                    finalMsg.style.zIndex = '99999';
+                    finalMsg.style.textAlign = 'center';
+                    finalMsg.style.fontSize = '24px';
+                    finalMsg.innerHTML = '📎<br><br>"I\'m so sorry..."<br><br>Clippy 永远消失了<br><br><button onclick="location.reload()" style="padding:10px 20px;font-size:16px;cursor:pointer">重新开始（他会回来吗？）</button>';
+                    document.body.appendChild(finalMsg);
+                }, 1000);
+            }
+        }
+
+        // 打字检测 - 疯狂骚扰
+        let lastTypingTime = 0;
+        textArea.addEventListener('input', function() {
+            if (killMode) return;
+            const now = Date.now();
+            if (now - lastTypingTime > 500) {  // 每0.5秒检测一次，超烦
+                lastTypingTime = now;
+                const randomMsg = annoyingMessages[Math.floor(Math.random() * annoyingMessages.length)];
+                clippyText.innerHTML = randomMsg;
+                speechBubble.style.display = 'block';
+                clippyAvatar.style.transform = 'scale(1.2)';
+                setTimeout(() => clippyAvatar.style.transform = '', 200);
+                shakeScreen();
+            }
+            checkKillCommand();
+            
+            // 检测各种词触发骚扰
+            const txt = textArea.value.toLowerCase();
+            if (txt.includes('fuck') || txt.includes('shit') || txt.includes('damn')) {
+                clippyText.innerHTML = "📎 你说脏话了！需要我帮你过滤成***吗？每句话都过滤？";
+                flashScreen();
+            }
+            if (txt.includes('dear') || txt.includes('亲爱的')) {
+                clippyText.innerHTML = "📎 啊！你在写信！需要信纸模板吗？我有1000种！还有信封模板！";
+            }
+            if (txt.length > 0 && txt.length % 50 === 0) {
+                clippyText.innerHTML = `📎 你已经写了 ${txt.length} 个字了！要不要我帮你检查语法？每50字提醒一次！`;
+            }
+        });
+
+        // 鼠标移动追踪 - 烦人
+        document.addEventListener('mousemove', function(e) {
+            if (killMode) return;
+            const rect = mainClippy.getBoundingClientRect();
+            const distance = Math.hypot(e.clientX - rect.left, e.clientY - rect.top);
+            if (distance < 120) {
+                mainClippy.style.transform = `translate(${Math.random() * 80 - 40}px, ${Math.random() * 80 - 40}px)`;
+                setTimeout(() => mainClippy.style.transform = '', 300);
+                if (Math.random() < 0.3) {
+                    clippyText.innerHTML = "📎 别碰我！除非你说 'I wanna kill you'！";
+                    flashScreen();
+                }
+            }
+        });
+
+        // 定时骚扰 - 每5秒一次
+        setInterval(() => {
+            if (killMode) return;
+            if (Math.random() < 0.7) {
+                const randomMsg = annoyingMessages[Math.floor(Math.random() * annoyingMessages.length)];
+                clippyText.innerHTML = randomMsg;
+                speechBubble.style.display = 'block';
+                showNotification("📎 " + randomMsg.substring(0, 60));
+                shakeScreen();
+            }
+        }, 5000);
+
+        // 自动克隆
+        cloneInterval = setInterval(autoSpawnClones, 8000);
+        
+        // 定时全屏闪烁
+        flashInterval = setInterval(() => {
+            if (killMode) return;
+            if (Math.random() < 0.4) flashScreen();
+        }, 10000);
+        
+        // 定时震动
+        shakeInterval = setInterval(() => {
+            if (killMode) return;
+            if (Math.random() < 0.5) shakeScreen();
+        }, 7000);
+
+        // 点击Clippy
+        mainClippy.addEventListener('click', function() {
+            if (killMode) return;
+            const randomMsg = annoyingMessages[Math.floor(Math.random() * annoyingMessages.length)];
+            clippyText.innerHTML = randomMsg;
+            speechBubble.style.display = 'block';
+            flashScreen();
+            shakeScreen();
+        });
+
+        // 页面关闭警告
+        window.addEventListener('beforeunload', function(e) {
+            if (!killMode) {
+                e.preventDefault();
+                e.returnValue = '📎 你要走吗？我还没烦够你呢！说 "I wanna kill you" 我才会放过你！';
+                return '📎 你要走吗？我还没烦够你呢！说 "I wanna kill you" 我才会放过你！';
+            }
+        });
+
+        // 导出功能
+        function exportMD() {
+            const content = textArea.value;
+            const blob = new Blob([content], {type: 'text/markdown'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `clippy_notes_${Date.now()}.md`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification("📄 已导出为 .md 文件");
+        }
+        
+        function exportTXT() {
+            const content = textArea.value;
+            const blob = new Blob([content], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `clippy_notes_${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification("📝 已导出为 .txt 文件");
+        }
+        
+        window.exportMD = exportMD;
+        window.exportTXT = exportTXT;
+        window.showAdvice = showAdvice;
+        window.spawnClone = spawnClone;
+        window.closeBubble = closeBubble;
+
+        // 启动欢迎
+        setTimeout(() => {
+            showNotification("📎 超级烦人版 Clippy 1000x 已上线！只有说 'I wanna kill you' 才能让它消失！");
+            for(let i = 0; i < 3; i++) setTimeout(() => spawnClone(), i * 2000);
+        }, 1000);
+        
+        console.log("%c📎 Clippy 1000x 已注入！说 'I wanna kill you' 才能终结它！", "color: #ff4444; font-size: 20px; font-weight: bold;");
+    </script>
+</body>
+</html>
