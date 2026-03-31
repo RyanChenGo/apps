@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💎 DocEditor Pro - 专业文档编辑器 | 一次性买断 ¥9.9 CAD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a0f1a 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* 购买卡片 */
+        .purchase-card {
+            max-width: 520px;
+            width: 100%;
+            background: #1e293b;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: white;
+            margin-top: 12px;
+        }
+
+        /* 价格区域 */
+        .price-area {
+            text-align: center;
+            padding: 32px 24px;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+        }
+
+        .price {
+            font-size: 48px;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+
+        .price small {
+            font-size: 16px;
+            color: #94a3b8;
+        }
+
+        .price-note {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        /* 功能列表 */
+        .features {
+            padding: 24px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .feature-item .check {
+            width: 24px;
+            height: 24px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        /* 支付表单 */
+        .payment-form {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .card-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* 购买按钮 */
+        .buy-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .buy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 免费链接区域 */
+        .free-section {
+            text-align: center;
+            padding: 20px 24px 28px;
+            background: #0f172a;
+            border-top: 1px solid #334155;
+        }
+
+        .free-link {
+            display: inline-block;
+            color: #fbbf24;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 12px 24px;
+            background: rgba(251, 191, 36, 0.1);
+            border-radius: 40px;
+            transition: all 0.2s;
+        }
+
+        .free-link:hover {
+            background: rgba(251, 191, 36, 0.2);
+            transform: scale(1.02);
+        }
+
+        .free-note {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 12px;
+        }
+
+        /* 成功弹窗 */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .success-card {
+            background: #1e293b;
+            border-radius: 32px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            margin: 20px;
+            border: 1px solid #334155;
+            animation: scaleIn 0.3s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .success-card h2 {
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .success-card p {
+            color: #94a3b8;
+            margin-bottom: 24px;
+        }
+
+        .success-card button {
+            background: #10b981;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="purchase-card">
+        <div class="header">
+            <h1>💎 DocEditor Pro</h1>
+            <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">专业文档编辑器</p>
+            <div class="badge">🔥 限时优惠 · 终身买断</div>
+        </div>
+
+        <div class="price-area">
+            <div class="price">$10 <small>CAD</small></div>
+            <div class="price-note">≈ ¥52 人民币 · 一次性买断，永久使用</div>
+        </div>
+
+        <div class="features">
+            <div class="feature-item">
+                <div class="check">✓</div>
+                <span>📐 专业格式支持：LaTeX / RST / AsciiDoc / Org-mode</span>
+            </div>
+            <div class="feature-item">
+                <div class="check">✓</div>
+                <span>📄 多格式导出：PDF / DOCX / HTML / RTF</span>
+            </div>
+            <div class="feature-item">
+                <div class="check">✓</div>
+                <span>🎨 学术模板库 + 代码片段智能插入</span>
+            </div>
+            <div class="feature-item">
+                <div class="check">✓</div>
+                <span>⚡ 实时预览 + 字数统计 + 云端备份</span>
+            </div>
+            <div class="feature-item">
+                <div class="check">✓</div>
+                <span>🔒 永久免费更新 · 跨平台支持</span>
+            </div>
+        </div>
+
+        <div class="payment-form">
+            <div class="form-group">
+                <label>💳 卡号</label>
+                <input type="text" id="cardNumber" placeholder="4242 4242 4242 4242" value="4242 4242 4242 4242">
+            </div>
+            <div class="card-row">
+                <div class="form-group">
+                    <label>📅 有效期</label>
+                    <input type="text" id="expiry" placeholder="MM/YY" value="12/28">
+                </div>
+                <div class="form-group">
+                    <label>🔐 CVV</label>
+                    <input type="text" id="cvv" placeholder="123" value="123">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>👤 持卡人姓名</label>
+                <input type="text" id="cardName" placeholder="YOUR NAME" value="PRO USER">
+            </div>
+            <div class="form-group">
+                <label>📧 邮箱（接收许可证）</label>
+                <input type="email" id="email" placeholder="your@email.com" value="pro@user.com">
+            </div>
+            <button class="buy-btn" id="buyBtn">💎 立即购买 · $10 CAD</button>
+        </div>
+
+        <div class="free-section">
+            <a href="editor.app/editorpro.html" class="free-link">
+                🎁 Use free, forever
+            </a>
+            <div class="free-note">
+                无需付费，永久免费使用所有 Pro 功能
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const buyBtn = document.getElementById('buyBtn');
+
+        function showSuccessAndRedirect() {
+            const overlay = document.createElement('div');
+            overlay.className = 'success-overlay';
+            overlay.innerHTML = `
+                <div class="success-card">
+                    <div class="success-icon">🎉</div>
+                    <h2>购买成功！</h2>
+                    <p>感谢购买 DocEditor Pro<br>许可证已发送至您的邮箱</p>
+                    <p style="font-size: 14px; color: #fbbf24;">$10 CAD 已支付（演示模式）</p>
+                    <button id="launchEditorBtn">🚀 启动编辑器</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            const launchBtn = document.getElementById('launchEditorBtn');
+            launchBtn.onclick = () => {
+                window.location.href = 'editor.app/editorpro.html';
+            };
+        }
+
+        buyBtn.addEventListener('click', () => {
+            const cardNum = document.getElementById('cardNumber').value;
+            const email = document.getElementById('email').value;
+            
+            if (!cardNum || !email) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            showSuccessAndRedirect();
+        });
+    </script>
+</body>
+</html>
