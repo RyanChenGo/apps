@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专业文档编辑器 Pro - 学术/技术写作工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'JetBrains Mono', 'Courier New', monospace;
+            background: #1a1a2e;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 工具栏 */
+        .toolbar {
+            background: #2d2d3a;
+            padding: 8px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            border-bottom: 1px solid #3d3d4a;
+        }
+
+        .tool-group {
+            display: flex;
+            gap: 4px;
+            background: #3d3d4a;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .tool-btn {
+            background: #4a4a5a;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 12px;
+            font-family: monospace;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: #5a5a6a;
+            transform: translateY(-1px);
+        }
+
+        .tool-btn.primary {
+            background: #4caf50;
+        }
+        .tool-btn.accent {
+            background: #2196f3;
+        }
+        .tool-btn.warning {
+            background: #ff9800;
+        }
+
+        /* 主布局 */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 280px;
+            background: #252532;
+            border-right: 1px solid #3d3d4a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-section {
+            padding: 12px;
+            border-bottom: 1px solid #3d3d4a;
+        }
+
+        .sidebar-title {
+            color: #ffd966;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .template-list, .snippet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .template-item, .snippet-item {
+            background: #1e1e2f;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .template-item:hover, .snippet-item:hover {
+            background: #3d3d4a;
+            transform: translateX(4px);
+        }
+
+        /* 编辑器区域 */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .filename-bar {
+            background: #2d2d3a;
+            padding: 8px 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #3d3d4a;
+        }
+
+        #filename {
+            background: #1e1e2f;
+            border: 1px solid #4a4a5a;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            width: 250px;
+        }
+
+        #fileExt {
+            background: #3d3d4a;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #ffd966;
+        }
+
+        .stats {
+            margin-left: auto;
+            display: flex;
+            gap: 16px;
+            font-size: 11px;
+            color: #888;
+        }
+
+        .code-editor {
+            flex: 1;
+            background: #1e1e2f;
+            overflow: auto;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            background: #1e1e2f;
+            color: #e0e0e0;
+            border: none;
+            outline: none;
+            padding: 20px;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            resize: none;
+            tab-size: 4;
+        }
+
+        /* 预览面板 */
+        .preview-panel {
+            width: 400px;
+            background: #fff;
+            border-left: 1px solid #3d3d4a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .preview-header {
+            background: #2d2d3a;
+            padding: 8px 12px;
+            color: white;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .preview-content {
+            flex: 1;
+            padding: 16px;
+            overflow: auto;
+            font-family: 'Segoe UI', system-ui;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* 通知 */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            animation: slideIn 0.3s;
+            z-index: 2000;
+            font-family: monospace;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            background: #2d2d3a;
+            padding: 6px 16px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #aaa;
+            border-top: 1px solid #3d3d4a;
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <div class="tool-group">
+            <button class="tool-btn primary" onclick="saveAsTEX()">📐 导出 .tex</button>
+            <button class="tool-btn primary" onclick="saveAsRST()">📖 导出 .rst</button>
+            <button class="tool-btn primary" onclick="saveAsADOC()">📝 导出 .adoc</button>
+            <button class="tool-btn primary" onclick="saveAsORG()">📋 导出 .org</button>
+        </div>
+        <div class="tool-group">
+            <button class="tool-btn" onclick="saveAsRTF()">📄 导出 .rtf</button>
+            <button class="tool-btn" onclick="saveAsDOCX()">📎 导出 .docx (模拟)</button>
+            <button class="tool-btn" onclick="saveAsHTML()">🌐 导出 .html</button>
+            <button class="tool-btn" onclick="saveAsPDF()">📑 导出 .pdf</button>
+        </div>
+        <div class="tool-group">
+            <button class="tool-btn accent" onclick="loadFile()">📂 打开文件</button>
+            <button class="tool-btn warning" onclick="clearEditor()">🗑️ 清空</button>
+            <button class="tool-btn" onclick="copyToClipboard()">📋 复制</button>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <!-- 侧边栏：模板和代码片段 -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">📚 专业模板</div>
+                <div class="template-list">
+                    <div class="template-item" onclick="loadTemplate('latex-article')">📐 LaTeX 学术论文模板</div>
+                    <div class="template-item" onclick="loadTemplate('rst-doc')">📖 reStructuredText 文档模板</div>
+                    <div class="template-item" onclick="loadTemplate('adoc-manual')">📝 AsciiDoc 手册模板</div>
+                    <div class="template-item" onclick="loadTemplate('org-mode')">📋 Org-mode 笔记模板</div>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-title">⚡ 常用代码片段</div>
+                <div class="snippet-list">
+                    <div class="snippet-item" onclick="insertSnippet('latex-math')">📐 LaTeX: 行内公式 $...$</div>
+                    <div class="snippet-item" onclick="insertSnippet('latex-equation')">📐 LaTeX: 公式环境 \begin{equation}</div>
+                    <div class="snippet-item" onclick="insertSnippet('rst-code')">📖 RST: 代码块 .. code-block::</div>
+                    <div class="snippet-item" onclick="insertSnippet('adoc-table')">📝 AsciiDoc: 表格</div>
+                    <div class="snippet-item" onclick="insertSnippet('org-todo')">📋 Org-mode: TODO 条目</div>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-title">ℹ️ 帮助</div>
+                <div style="font-size: 11px; color: #aaa; line-height: 1.5;">
+                    • LaTeX: 学术排版标准<br>
+                    • RST: Python 文档标准<br>
+                    • AsciiDoc: 技术文档标准<br>
+                    • Org-mode: Emacs 笔记系统
+                </div>
+            </div>
+        </div>
+
+        <!-- 编辑器区域 -->
+        <div class="editor-area">
+            <div class="filename-bar">
+                <label>📁 文件名：</label>
+                <input type="text" id="filename" value="document">
+                <span id="fileExt">.tex</span>
+                <div class="stats">
+                    <span>📊 字符: <span id="charCount">0</span></span>
+                    <span>📝 单词: <span id="wordCount">0</span></span>
+                    <span>📏 行数: <span id="lineCount">0</span></span>
+                </div>
+            </div>
+            <div class="code-editor">
+                <textarea id="editor" placeholder="开始编写专业文档...&#10;&#10;支持格式: LaTeX, reStructuredText, AsciiDoc, Org-mode, RTF, HTML, PDF"></textarea>
+            </div>
+        </div>
+
+        <!-- 预览面板 -->
+        <div class="preview-panel">
+            <div class="preview-header">
+                <span>👁️ 实时预览 (纯文本/标记)</span>
+                <button onclick="refreshPreview()" style="background: none; border: none; color: white; cursor: pointer;">🔄 刷新</button>
+            </div>
+            <div class="preview-content" id="previewContent">
+                <p style="color: #888;">预览区域 - 显示当前文档内容</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span>✨ 专业文档编辑器 Pro | 支持 LaTeX / RST / AsciiDoc / Org-mode / RTF</span>
+        <span>💡 点击侧边栏模板快速开始</span>
+    </div>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const filenameInput = document.getElementById('filename');
+        const fileExtSpan = document.getElementById('fileExt');
+        const charCountSpan = document.getElementById('charCount');
+        const wordCountSpan = document.getElementById('wordCount');
+        const lineCountSpan = document.getElementById('lineCount');
+        const previewContent = document.getElementById('previewContent');
+
+        // 更新统计
+        function updateStats() {
+            const content = editor.value;
+            charCountSpan.textContent = content.length;
+            wordCountSpan.textContent = content.trim() === '' ? 0 : content.trim().split(/\s+/).length;
+            lineCountSpan.textContent = content === '' ? 0 : content.split('\n').length;
+        }
+        editor.addEventListener('input', updateStats);
+        editor.addEventListener('keyup', updateStats);
+
+        // 刷新预览
+        function refreshPreview() {
+            const content = editor.value;
+            previewContent.innerHTML = `<pre style="white-space: pre-wrap; font-family: monospace; font-size: 12px; background: #f5f5f5; padding: 12px; border-radius: 8px;">${escapeHtml(content.substring(0, 5000))}${content.length > 5000 ? '\n\n... (内容过长，仅显示前5000字符)' : ''}</pre>`;
+        }
+        editor.addEventListener('input', refreshPreview);
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // 保存文件通用函数
+        function saveFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification(`✅ 已导出: ${filename}`);
+        }
+
+        function getFullFilename(ext) {
+            let name = filenameInput.value.trim();
+            if (name === '') name = 'document';
+            return `${name}${ext}`;
+        }
+
+        function showNotification(msg) {
+            const n = document.createElement('div');
+            n.className = 'notification';
+            n.textContent = msg;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 2500);
+        }
+
+        // ========== 导出专业格式 ==========
+        function saveAsTEX() {
+            let content = editor.value;
+            if (!content.includes('\\documentclass')) {
+                content = `% LaTeX 文档
+% 导出时间: ${new Date().toLocaleString()}
+\\documentclass{article}
+\\usepackage{ctex}
+\\title{文档标题}
+\\author{作者}
+\\begin{document}
+\\maketitle
+\\section{引言}
+${content}
+\\end{document}`;
+            }
+            saveFile(content, getFullFilename('.tex'), 'text/plain');
+            fileExtSpan.textContent = '.tex';
+        }
+
+        function saveAsRST() {
+            let content = editor.value;
+            if (!content.includes('======')) {
+                content = `===================
+文档标题
+===================
+
+:作者: 作者名
+:日期: ${new Date().toLocaleDateString()}
+
+.. contents:: 目录
+
+${content}`;
+            }
+            saveFile(content, getFullFilename('.rst'), 'text/plain');
+            fileExtSpan.textContent = '.rst';
+        }
+
+        function saveAsADOC() {
+            let content = editor.value;
+            if (!content.includes('= ')) {
+                content = `= 文档标题
+作者名 <email@example.com>
+:revdate: ${new Date().toLocaleDateString()}
+:doctype: article
+
+== 章节 1
+
+${content}`;
+            }
+            saveFile(content, getFullFilename('.adoc'), 'text/plain');
+            fileExtSpan.textContent = '.adoc';
+        }
+
+        function saveAsORG() {
+            let content = editor.value;
+            if (!content.includes('#+TITLE')) {
+                content = `#+TITLE: 文档标题
+#+AUTHOR: 作者
+#+DATE: ${new Date().toLocaleDateString()}
+
+* 一级标题
+${content}`;
+            }
+            saveFile(content, getFullFilename('.org'), 'text/plain');
+            fileExtSpan.textContent = '.org';
+        }
+
+        function saveAsRTF() {
+            const content = editor.value;
+            const rtfHeader = `{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Courier New;}}\\f0\\fs24 `;
+            const rtfBody = content.replace(/[\\{}]/g, '\\$&').replace(/\n/g, '\\par ');
+            const rtf = rtfHeader + rtfBody + '}';
+            saveFile(rtf, getFullFilename('.rtf'), 'application/rtf');
+            fileExtSpan.textContent = '.rtf';
+        }
+
+        function saveAsDOCX() {
+            // 模拟 .docx 导出（实际为 HTML 包装，可被 Word 打开）
+            const content = editor.value;
+            const docxHtml = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>${filenameInput.value}</title></head>
+<body style="font-family: 'Times New Roman'; margin: 2cm;">
+<pre style="white-space: pre-wrap; font-family: monospace;">${escapeHtml(content)}</pre>
+<p style="text-align: center; color: gray;">导出时间: ${new Date().toLocaleString()}</p>
+</body>
+</html>`;
+            saveFile(docxHtml, getFullFilename('.docx'), 'application/msword');
+            fileExtSpan.textContent = '.docx';
+            showNotification('📎 已导出为 .docx (HTML兼容格式，Word可打开)');
+        }
+
+        function saveAsHTML() {
+            const content = editor.value;
+            const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>${filenameInput.value}</title>
+<style>body{max-width:800px;margin:40px auto;padding:20px;line-height:1.6;}</style>
+</head><body><pre style="white-space:pre-wrap;">${escapeHtml(content)}</pre></body></html>`;
+            saveFile(html, getFullFilename('.html'), 'text/html');
+            fileExtSpan.textContent = '.html';
+        }
+
+        function saveAsPDF() {
+            const content = editor.value;
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <!DOCTYPE html>
+                <html><head><meta charset="UTF-8"><title>${filenameInput.value}</title>
+                <style>body{font-family:monospace;padding:40px;white-space:pre-wrap;}</style>
+                </head><body><pre>${escapeHtml(content)}</pre></body></html>
+            `);
+            win.document.close();
+            win.print();
+            showNotification('📑 PDF 导出窗口已打开，请使用"另存为PDF"');
+            fileExtSpan.textContent = '.pdf';
+        }
+
+        // 模板加载
+        function loadTemplate(type) {
+            const templates = {
+                'latex-article': `% LaTeX 学术论文模板
+\\documentclass[12pt,a4paper]{article}
+\\usepackage{ctex}
+\\usepackage{amsmath,amssymb}
+\\title{基于深度学习的文本分析}
+\\author{张三 \\thanks{通讯作者}}
+\\date{\\today}
+\\begin{document}
+\\maketitle
+\\begin{abstract}
+本研究探讨了深度学习在自然语言处理中的应用...
+\\end{abstract}
+\\section{引言}
+随着人工智能技术的发展...
+\\section{方法}
+我们提出了一种新的神经网络架构...
+\\section{实验}
+实验结果表明...
+\\section{结论}
+本文总结了...
+\\end{document}`,
+                'rst-doc': `=====================
+reStructuredText 文档
+=====================
+
+:Author: 张三
+:Date: ${new Date().toLocaleDateString()}
+
+.. contents:: 目录
+
+引言
+====
+
+这是 reStructuredText 格式的文档。
+
+代码示例
+========
+
+.. code-block:: python
+   
+   def hello():
+       print("Hello, World!")
+
+总结
+====
+
+本文档展示了 RST 格式的用法。`,
+                'adoc-manual': `= AsciiDoc 手册
+作者名
+:revdate: ${new Date().toLocaleDateString()}
+:toc:
+
+== 概述
+
+AsciiDoc 是一种轻量级标记语言。
+
+== 代码示例
+
+[source,python]
+----
+def hello():
+    print("Hello")
+----
+
+== 总结
+
+本文档展示了 AsciiDoc 的基本语法。`,
+                'org-mode': `#+TITLE: Org-mode 笔记
+#+AUTHOR: 张三
+#+DATE: ${new Date().toLocaleDateString()}
+
+* TODO 研究任务
+** DONE 文献调研
+   CLOSED: [${new Date().toLocaleDateString()}]
+** TODO 实验设计
+** TODO 论文撰写
+
+* 日常记录
+  - 项目进展
+  - 会议纪要
+
+#+BEGIN_SRC python
+print("Org-mode 支持代码块")
+#+END_SRC`
+            };
+            if (templates[type]) {
+                editor.value = templates[type];
+                updateStats();
+                refreshPreview();
+                showNotification(`📚 已加载 ${type} 模板`);
+            }
+        }
+
+        // 插入代码片段
+        function insertSnippet(type) {
+            const snippets = {
+                'latex-math': ' $公式$ ',
+                'latex-equation': '\n\\begin{equation}\n    \n\\end{equation}\n',
+                'rst-code': '\n.. code-block:: python\n   \n   \n',
+                'adoc-table': '\n[cols="2,2,2"]\n|===\n| 标题1 | 标题2 | 标题3\n| 内容1 | 内容2 | 内容3\n|===\n',
+                'org-todo': '\n* TODO 任务描述\n  DEADLINE: <${new Date().toLocaleDateString()}>\n'
+            };
+            const snippet = snippets[type] || '';
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const text = editor.value;
+            editor.value = text.substring(0, start) + snippet + text.substring(end);
+            editor.selectionStart = editor.selectionEnd = start + snippet.length;
+            editor.focus();
+            updateStats();
+            refreshPreview();
+            showNotification(`⚡ 已插入 ${type} 片段`);
+        }
+
+        // 打开文件
+        function loadFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.tex,.rst,.adoc,.org,.rtf,.html,.txt,.md';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    editor.value = ev.target.result;
+                    updateStats();
+                    refreshPreview();
+                    const name = file.name.replace(/\.[^/.]+$/, '');
+                    filenameInput.value = name;
+                    const ext = file.name.split('.').pop();
+                    fileExtSpan.textContent = `.${ext}`;
+                    showNotification(`📂 已打开: ${file.name}`);
+                };
+                reader.readAsText(file, 'UTF-8');
+            };
+            input.click();
+        }
+
+        function clearEditor() {
+            if (confirm('清空所有内容？')) {
+                editor.value = '';
+                updateStats();
+                refreshPreview();
+                showNotification('🗑️ 已清空');
+            }
+        }
+
+        function copyToClipboard() {
+            editor.select();
+            document.execCommand('copy');
+            showNotification('📋 已复制');
+        }
+
+        // 快捷键
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                const ext = fileExtSpan.textContent;
+                if (ext === '.tex') saveAsTEX();
+                else if (ext === '.rst') saveAsRST();
+                else if (ext === '.adoc') saveAsADOC();
+                else if (ext === '.org') saveAsORG();
+                else saveAsTEX();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+                e.preventDefault();
+                loadFile();
+            }
+        });
+
+        // 默认示例内容
+        const defaultContent = `% LaTeX 示例文档
+% 这是一个专业文档编辑器
+
+\\documentclass{article}
+\\usepackage{ctex}
+\\begin{document}
+\\title{专业文档编辑器 Pro}
+\\author{学术作者}
+\\maketitle
+
+\\section{简介}
+
+本编辑器支持多种专业格式：
+
+\\begin{itemize}
+  \\item \\textbf{LaTeX} - 学术排版标准
+  \\item \\textbf{reStructuredText} - Python 文档标准
+  \\item \\textbf{AsciiDoc} - 技术文档标准
+  \\item \\textbf{Org-mode} - Emacs 笔记系统
+\\end{itemize}
+
+\\section{功能特性}
+
+\\begin{enumerate}
+  \\item 实时统计字符数、单词数
+  \\item 侧边栏专业模板
+  \\item 常用代码片段插入
+  \\item 多格式导出
+\\end{enumerate}
+
+\\section{总结}
+
+这是一个为学术和技术写作设计的专业工具。
+
+\\end{document}`;
+        
+        editor.value = defaultContent;
+        updateStats();
+        refreshPreview();
+        fileExtSpan.textContent = '.tex';
+
+        window.loadTemplate = loadTemplate;
+        window.insertSnippet = insertSnippet;
+        window.saveAsTEX = saveAsTEX;
+        window.saveAsRST = saveAsRST;
+        window.saveAsADOC = saveAsADOC;
+        window.saveAsORG = saveAsORG;
+        window.saveAsRTF = saveAsRTF;
+        window.saveAsDOCX = saveAsDOCX;
+        window.saveAsHTML = saveAsHTML;
+        window.saveAsPDF = saveAsPDF;
+        window.loadFile = loadFile;
+        window.clearEditor = clearEditor;
+        window.copyToClipboard = copyToClipboard;
+        window.refreshPreview = refreshPreview;
+    </script>
+</body>
+</html>
