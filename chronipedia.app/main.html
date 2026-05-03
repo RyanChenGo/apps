@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Chronipédia - L'encyclopédie du temps</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #eef2f5;
+            font-family: 'Segoe UI', 'Roboto', 'Noto Sans', system-ui, sans-serif;
+            color: #1a2a3a;
+            line-height: 1.45;
+        }
+
+        .chroni-wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #dce5ec;
+            border-right: 1px solid #dce5ec;
+        }
+
+        .chroni-header {
+            background: #ffffff;
+            padding: 1.2rem 2rem 0.8rem 2rem;
+            border-bottom: 3px solid #2c6e9e;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        .logo-area h1 {
+            font-size: 2rem;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+            color: #1e4668;
+            margin-bottom: 0.2rem;
+        }
+
+        .logo-area p {
+            color: #4a627a;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid #8bb3d0;
+            padding-left: 12px;
+        }
+
+        .search-section {
+            margin: 0.5rem 0 0.5rem 0;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 12px 18px;
+            font-size: 1rem;
+            border: 1px solid #cbdbe2;
+            border-radius: 40px;
+            background: #fefefe;
+            transition: 0.2s;
+            font-family: inherit;
+            outline: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        #searchInput:focus {
+            border-color: #2c6e9e;
+            box-shadow: 0 0 0 2px rgba(44,110,158,0.2);
+        }
+
+        .suggest-box {
+            background: white;
+            border-radius: 20px;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .did-you-mean {
+            background: #eef3fc;
+            padding: 8px 15px;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .did-you-mean a {
+            color: #1f6392;
+            font-weight: 500;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .mini-badge {
+            background: #d9e3ec;
+            border-radius: 30px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            color: #2c5282;
+        }
+
+        .chroni-body {
+            flex: 1;
+            padding: 1.8rem 2rem;
+            background: #ffffff;
+        }
+
+        .dernieres-nouvelles {
+            background: #f8fafd;
+            border-left: 5px solid #d4451e;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 14px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .dernieres-nouvelles h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #b64926;
+            margin-bottom: 10px;
+        }
+        
+        .news-list {
+            list-style: none;
+            padding: 0;
+        }
+        .news-list li {
+            margin-bottom: 12px;
+            border-bottom: 1px dashed #cbdae6;
+            padding-bottom: 8px;
+        }
+        .news-title {
+            font-weight: bold;
+            color: #1f5882;
+            cursor: pointer;
+        }
+        .news-title:hover {
+            text-decoration: underline;
+        }
+        .news-date {
+            font-size: 0.7rem;
+            color: #6c7e94;
+            margin-left: 12px;
+        }
+
+        .articles-container {
+            margin-top: 1rem;
+        }
+
+        .article-card {
+            background: #fefefe;
+            border: 1px solid #e2edf2;
+            border-radius: 20px;
+            padding: 1rem 1.6rem;
+            margin-bottom: 1.2rem;
+            transition: 0.1s linear;
+            cursor: pointer;
+        }
+
+        .article-card:hover {
+            background: #fafeff;
+            border-color: #bdd4e4;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        .article-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #1f5882;
+            margin-bottom: 5px;
+        }
+
+        .article-meta {
+            font-size: 0.75rem;
+            color: #6c7e94;
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #e0e9ef;
+            padding-bottom: 8px;
+        }
+
+        .article-preview {
+            color: #2d4259;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.65);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 950px;
+            max-height: 85vh;
+            border-radius: 28px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.3);
+            animation: fadeScale 0.2s ease;
+        }
+
+        @keyframes fadeScale {
+            from { opacity: 0; transform: scale(0.97);}
+            to { opacity: 1; transform: scale(1);}
+        }
+
+        .modal-header {
+            background: #f2f6f9;
+            padding: 1rem 1.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid #dce5ec;
+        }
+
+        .modal-header h3 {
+            color: #175d89;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            font-size: 28px;
+            font-weight: 300;
+            cursor: pointer;
+            color: #6f8eaa;
+            transition: 0.1s;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: #c22;
+        }
+
+        .modal-body {
+            padding: 1.6rem 2rem;
+            overflow-y: auto;
+            flex: 1;
+            background: #fff;
+        }
+
+        pre {
+            font-family: 'Courier New', 'Fira Code', monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: #f7f9fc;
+            padding: 1rem;
+            border-radius: 16px;
+            border-left: 4px solid #2c6e9e;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .meta-footer {
+            font-size: 0.75rem;
+            color: #6983a0;
+            border-top: 1px solid #e2edf2;
+            padding-top: 12px;
+            margin-top: 18px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .chroni-footer {
+            background: #f8fafc;
+            text-align: center;
+            padding: 1.2rem;
+            font-size: 0.75rem;
+            color: #4b6f8c;
+            border-top: 1px solid #e2e8f0;
+            font-family: monospace;
+        }
+
+        @media (max-width: 700px) {
+            .chroni-header, .chroni-body {
+                padding: 1rem;
+            }
+            .article-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="chroni-wrapper">
+    <div class="chroni-header">
+        <div class="logo-area">
+            <h1>Chronipédia</h1>
+            <p>L'encyclopédie des événements, du temps et des articles libres</p>
+        </div>
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Rechercher..." autocomplete="off">
+            </div>
+            <div id="suggestArea" class="suggest-box"></div>
+        </div>
+    </div>
+
+    <div class="chroni-body">
+        <!-- Dernières nouvelles : affichera les 5 articles les plus récents du JSON -->
+        <div class="dernieres-nouvelles">
+            <h2>📰 Dernières nouvelles</h2>
+            <div id="newsListContainer">
+                <div style="text-align:center; padding:1rem;">Chargement des dernières actualités...</div>
+            </div>
+        </div>
+
+        <div id="articlesList" class="articles-container">
+            <div style="text-align:center; padding:2rem;">Chargement des articles...</div>
+        </div>
+    </div>
+
+    <div class="chroni-footer">
+        ©ChenRyan 2026 Chronipédia Tous droits réservés Reproduction interdite .
+    </div>
+</div>
+
+<div id="articleModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Article</h3>
+            <span class="close-modal" id="closeModalBtn">&times;</span>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <pre id="articleContentPre"></pre>
+            <div class="meta-footer" id="modalMeta"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let articlesData = []; // 存储从 JSON 加载的数据
+
+    // 辅助函数：HTML转义
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    // 渲染“最新新闻”区域 (取最近更新的前5篇)
+    function renderLatestNews(articles) {
+        const container = document.getElementById('newsListContainer');
+        if (!articles || articles.length === 0) {
+            container.innerHTML = '<div class="mini-badge">Aucune actualité récente.</div>';
+            return;
+        }
+        // 按 lastUpdate 或 createdDate 降序排序 (取最新的)
+        const sorted = [...articles].sort((a, b) => {
+            const dateA = new Date(a.lastUpdate || a.createdDate);
+            const dateB = new Date(b.lastUpdate || b.createdDate);
+            return dateB - dateA;
+        });
+        const latest = sorted.slice(0, 5);
+        let html = '<ul class="news-list">';
+        latest.forEach(art => {
+            const displayDate = art.lastUpdate || art.createdDate;
+            html += `
+                <li>
+                    <span class="news-title" data-slug="${art.slug}">📄 ${escapeHtml(art.title)}</span>
+                    <span class="news-date">${escapeHtml(displayDate)}</span>
+                </li>
+            `;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+        
+        // 绑定点击事件
+        document.querySelectorAll('.news-title').forEach(el => {
+            el.addEventListener('click', (e) => {
+                const slug = el.getAttribute('data-slug');
+                const article = articlesData.find(a => a.slug === slug);
+                if (article) showArticleModal(article);
+            });
+        });
+    }
+
+    // 渲染搜索结果 (所有匹配的文章)
+    function renderSearchResults(articlesToShow) {
+        const container = document.getElementById('articlesList');
+        if (!articlesToShow.length) {
+            container.innerHTML = `<div style="background:#faf0e6; padding:1.5rem; border-radius:28px; text-align:center;">Aucun article ne correspond à votre recherche.</div>`;
+            return;
+        }
+        let html = '';
+        articlesToShow.forEach(art => {
+            html += `
+                <div class="article-card" data-slug="${art.slug}">
+                    <div class="article-title">${escapeHtml(art.title)}</div>
+                    <div class="article-meta">
+                        <span>📅 Créé le ${escapeHtml(art.createdDate || 'inconnue')}</span>
+                        <span>🕒 Dernière mise à jour : ${escapeHtml(art.lastUpdate || 'inconnue')}</span>
+                        <span>✍️ Auteur : ${escapeHtml(art.author || 'Anonyme')}</span>
+                    </div>
+                    <div class="article-preview">${escapeHtml(art.preview || '')}</div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        
+        document.querySelectorAll('.article-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const slug = card.getAttribute('data-slug');
+                const article = articlesData.find(a => a.slug === slug);
+                if (article) showArticleModal(article);
+            });
+        });
+    }
+
+    // 处理搜索建议 (Est-ce que tu veux dire)
+    function updateSuggestions(query, articlesList) {
+        const suggestDiv = document.getElementById('suggestArea');
+        if (!query || query.length === 0) {
+            suggestDiv.innerHTML = '';
+            return;
+        }
+        const lowerQuery = query.toLowerCase();
+        const matches = articlesList.filter(art => 
+            art.title.toLowerCase().includes(lowerQuery)
+        );
+        
+        if (matches.length === 0) {
+            suggestDiv.innerHTML = `<div class="mini-badge">Aucun résultat</div>`;
+            return;
+        }
+        
+        const exactMatch = matches.find(art => art.title.toLowerCase() === lowerQuery);
+        if (exactMatch) {
+            suggestDiv.innerHTML = `<div class="mini-badge">🔍 ${escapeHtml(exactMatch.title)}</div>`;
+            return;
+        }
+        
+        const firstSuggestion = matches[0];
+        suggestDiv.innerHTML = `
+            <div class="did-you-mean">
+                <span>🔎 Aucune correspondance exacte pour « ${escapeHtml(query)} ».</span>
+                <span>🤔 Est-ce que tu veux dire : <a id="suggestionLink">${escapeHtml(firstSuggestion.title)}</a> ?</span>
+            </div>
+        `;
+        const link = document.getElementById('suggestionLink');
+        if (link) {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('searchInput').value = firstSuggestion.title;
+                performSearch(firstSuggestion.title);
+            });
+        }
+    }
+
+    function performSearch(query) {
+        const lowerQuery = query.trim().toLowerCase();
+        if (lowerQuery === "") {
+            renderSearchResults(articlesData);
+            updateSuggestions("", articlesData);
+            return;
+        }
+        const filtered = articlesData.filter(art => 
+            art.title.toLowerCase().includes(lowerQuery)
+        );
+        renderSearchResults(filtered);
+        updateSuggestions(lowerQuery, articlesData);
+    }
+
+    // 显示文章模态框
+    function showArticleModal(article) {
+        const modal = document.getElementById('articleModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalPre = document.getElementById('articleContentPre');
+        const modalMeta = document.getElementById('modalMeta');
+        
+        modalTitle.innerText = article.title;
+        let content = article.fullContent || 'Contenu non disponible.';
+        modalPre.innerText = content;
+        modalMeta.innerHTML = `<span>📅 Créé: ${escapeHtml(article.createdDate || '?')}</span>
+                               <span>🕒 MAJ: ${escapeHtml(article.lastUpdate || '?')}</span>
+                               <span>✍️ ${escapeHtml(article.author || 'Anonyme')}</span>`;
+        modal.style.display = 'flex';
+    }
+
+    // 加载 redirect.json
+    async function loadData() {
+        try {
+            const response = await fetch('redirect.json');
+            if (!response.ok) throw new Error('JSON introuvable');
+            const data = await response.json();
+            // 假设 JSON 是一个数组
+            articlesData = data;
+            renderLatestNews(articlesData);
+            renderSearchResults(articlesData);
+        } catch (error) {
+            console.error(error);
+            document.getElementById('articlesList').innerHTML = `<div style="color:red; padding:2rem;">An unknown error had occured , please refresh page.</div>`;
+            document.getElementById('newsListContainer').innerHTML = `<div class="mini-badge">An unknown error had occured , please refresh page.</div>`;
+        }
+    }
+
+    // 搜索框事件绑定
+    document.addEventListener('DOMContentLoaded', () => {
+        loadData();
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', (e) => {
+            performSearch(e.target.value);
+        });
+    });
+
+    // 模态框关闭逻辑
+    const modal = document.getElementById('articleModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    function closeModal() { modal.style.display = 'none'; }
+    closeBtn.addEventListener('click', closeModal);
+    window.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+</script>
+</body>
+</html>
