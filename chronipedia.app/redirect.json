@@ -6,5 +6,13 @@
     "author": "ChenRyan - Chronipédia Officiel",
     "preview": "CHRONIPÉDIA EST CRÉÉ !",
     "fullContent": "3 Mai 2026 , Chronipédia est créé\nComment fonctionne-t-elle ?\nElle fonctionne gratuitement grâce à GitHub Pages , et elle fonctionne avec https://github.com/RyanChenGo/apps/blob/main/chronipedia.app/redirect.json qui est sa cerveau .\nJ'irai faire des nouvelles jusqu'à GitHub Pages n'existe plus ."
+  },
+  {
+    "title": "Pourquoi le C-400 est-il si résistant ?",
+    "createdDate": "2026-05-03",
+    "lastUpdate": "2026-05-03",
+    "author": "Turboprop Flight Simulator Game Crashing Fan",
+    "preview": "Le C-400(A400M) encaisse des chocs que RL-42(ATR-42) ne survivrait pas. Explications basées sur des crashs volontaires.",
+    "fullContent": "Question fréquente dans les forums : pourquoi le C-400 ne se désintègre-t-il pas au premier choc ?\n\nPlusieurs tests destructifs ont été menés :\n- Un RL-42 lancé à pleine vitesse contre un C-400 à l'arrêt : le C-400 perd une aile, le RL-42 est détruit.\n- Une voiture - carburant fonçant sur le C-400 : la voiture explose, le C-400 reste intact.\n- Un largage du dôme radar d'un E-42 : le C-400 perd sa dérive verticale ( Dutch roll ), mais ne se brise pas.\n\nPourquoi cette robustesse ?\n1. Masse et inertie : le C-400 pèse plusieurs fois plus lourd qu'un RL-42.\n2. Structure tolérante aux dommages : le jeu autorise une perte progressive des éléments (moteurs, bouts d'aile).\n3. Volonté des développeurs : le C-400 est probablement l'avion « star » du simulateur.\n\nConclusion : le C-400 ne vole pas, il traverse les crashes. C'est le char d'assaut de votre hangar."
   }
 ]
