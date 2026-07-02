@@ -13,12 +13,11 @@ Applications :
 - Audio player
 - Weather
 - Word Counter
-- Discussion with AI (not working 🧎)
-- Adblock (Project canceled)
-- LearnHTML (Project canceled)
 - Editor
+- Clippy but very annoying than normal in 2001
+- Chronipedia
 
 Incoming Applications :
+N/A
 
-- Clippy but very annoying than normal in 2001
-- Something else ? Send SMS to 514-010-5891 or write e-mail to ryan2015dor@hotmail.com(or even @gmail.com)
+Something else ? Send SMS to 514-010-5891 or write e-mail to ryan2015dor@hotmail.com(or even @gmail.com)
